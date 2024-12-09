@@ -9,14 +9,14 @@ import { Session } from "@/app/components/features/Session/session";
 import { authOptions } from "@/lib/authOptions";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     cashRegisterId: string;
     sessionId: string;
-  };
+  }>;
 }
 
 export default async function SessionDetailPage({ params }: PageProps) {
-  const { cashRegisterId, sessionId } = params;
+  const { cashRegisterId, sessionId } = await params;
 
   // Get the user session
   const session = await getServerSession(authOptions);
