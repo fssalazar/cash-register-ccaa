@@ -3,7 +3,7 @@
 "use server";
 
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 import { CashRegisterService } from "@/services/cash-register";
 import { prisma } from "@/lib/prismaClient";
 import { SessionService } from "@/services/sessions";

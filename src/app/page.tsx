@@ -6,7 +6,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prismaClient";
 import { CashRegisterService } from "@/services/cash-register";
-import { authOptions } from "./api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 import { SessionService } from "@/services/sessions";
 import { CashRegister } from "./components/features/CashRegister/CashRegister";
 import { LayoutCCAA } from "./components/Layout";
