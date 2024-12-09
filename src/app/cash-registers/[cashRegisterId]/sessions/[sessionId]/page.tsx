@@ -16,7 +16,7 @@ interface PageProps {
 }
 
 export default async function SessionDetailPage({ params }: PageProps) {
-  const { cashRegisterId, sessionId } = await params;
+  const { cashRegisterId, sessionId } = params;
 
   // Get the user session
   const session = await getServerSession(authOptions);
