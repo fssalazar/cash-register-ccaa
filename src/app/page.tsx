@@ -11,11 +11,11 @@ import { SessionService } from "@/services/sessions";
 import { CashRegister } from "./components/features/CashRegister/CashRegister";
 import { LayoutCCAA } from "./components/Layout";
 
-interface Props {
-  searchParams: { [key: string]: string | string[] | undefined };
+interface PageProps {
+  searchParams?: Record<string, string | string[]>;
 }
 
-export default async function Home({ searchParams }: Props) {
+export default async function Home({ searchParams }: PageProps) {
   const page = parseInt((searchParams?.page as string) ?? "1", 10);
   const size = parseInt((searchParams?.size as string) ?? "10", 10);
   const session = await getServerSession(authOptions);
