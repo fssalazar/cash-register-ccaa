@@ -1,11 +1,11 @@
-import NextAuth from "next-auth";
+// src/app/api/auth/[...nextauth]/route.ts
+
+import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prismaClient";
 
-const prisma = new PrismaClient();
-
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -62,6 +62,11 @@ const handler = NextAuth({
   session: {
     strategy: "jwt",
   },
-});
+  secret: process.env.NEXTAUTH_SECRET, // Ensure you have this in your .env file
+};
 
+// Create the NextAuth handler with the authOptions
+const handler = NextAuth(authOptions);
+
+// Export the handler for GET and POST requests
 export { handler as GET, handler as POST };

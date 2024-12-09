@@ -7,26 +7,104 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Company {
-  id     String   @id @default(uuid()) @db.Uuid
-  name   String
-  users  User[]
+model CashRegister {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String
+  userId      String     @db.Uuid
+  companyId   String     @db.Uuid
+  sessions    Session[]
+
+  user        User       @relation(fields: [userId], references: [id])
+  company     Company    @relation(fields: [companyId], references: [id])
+
+  @@index([userId])
+  @@index([companyId])
 }
 
-model User {
-  id        String   @id @default(uuid()) @db.Uuid
-  email     String   @unique
-  password  String
-  name      String
-  lastname  String
-  role      Role
-  companyId String   @db.Uuid
-  company   Company  @relation(fields: [companyId], references: [id])
+model Session {
+  id              String     @id @default(uuid()) @db.Uuid
+  openDate        DateTime
+  closeDate       DateTime?
+  openAmount      Float
+  cashRegisterId  String     @db.Uuid
 
-  @@index([companyId])
+  closure         Closure?
+  bills           Bills?
+  records         Record[]
+
+  cashRegister    CashRegister @relation(fields: [cashRegisterId], references: [id])
+
+  @@index([cashRegisterId])
+}
+
+model Closure {
+  id                     String   @id @default(uuid()) @db.Uuid
+  initialAmount          Float
+  rereceivedAmount       Float
+  totalRecordsAmount     Float
+  receivedAmountByCard   Float
+  receivedAmountByCheck  Float
+  receivedAmountByMoney  Float
+  sessionId              String   @unique @db.Uuid
+
+  session                Session  @relation(fields: [sessionId], references: [id])
+}
+
+model Bills {
+  id             String   @id @default(uuid()) @db.Uuid
+  hundred        Int
+  fifty          Int
+  twenty         Int
+  ten            Int
+  five           Int
+  two            Int
+  one            Int
+  fiftyCent      Int
+  twentyFiveCent Int
+  tenCent        Int
+  fiveCent       Int
+  total          Float
+  sessionId      String   @unique @db.Uuid
+
+  session        Session  @relation(fields: [sessionId], references: [id])
+}
+
+model Record {
+  id          String     @id @default(uuid()) @db.Uuid
+  code        String
+  action      String
+  value       Float
+  datetime   DateTime   @default(now())
+  sessionId   String     @db.Uuid
+
+  session     Session    @relation(fields: [sessionId], references: [id])
+
+  @@index([sessionId])
 }
 
 enum Role {
   Admin
   Employee
+}
+
+model Company {
+  id     String   @id @default(uuid()) @db.Uuid
+  name   String
+  users  User[]
+  cashRegisters CashRegister[]
+}
+
+model User {
+  id        String        @id @default(uuid()) @db.Uuid
+  email     String        @unique
+  password  String
+  name      String
+  lastname  String
+  role      Role
+  companyId String        @db.Uuid
+  company   Company       @relation(fields: [companyId], references: [id])
+
+  cashRegisters CashRegister[]
+
+  @@index([companyId])
 }

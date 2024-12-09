@@ -1,9 +1,8 @@
 // app/api/users/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient, Role } from "@prisma/client";
+import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prismaClient";
 
 export async function POST(request: NextRequest) {
   const { email, password, name, lastname, role, companyId } =

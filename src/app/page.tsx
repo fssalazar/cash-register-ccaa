@@ -1,29 +1,48 @@
+"use server";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // app/page.tsx
-"use client";
 
-import { Button } from "antd";
-import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prismaClient";
+import { CashRegisterService } from "@/services/cash-register";
+import { authOptions } from "./api/auth/[...nextauth]/route";
+import { SessionService } from "@/services/sessions";
+import { CashRegister } from "./components/features/CashRegister/CashRegister";
+import { LayoutCCAA } from "./components/Layout";
 
-export default function Home() {
-  const { data: session } = useSession();
-  const router = useRouter();
+interface Props {
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default async function Home({ searchParams }: Props) {
+  const page = parseInt((searchParams?.page as string) ?? "1", 10);
+  const size = parseInt((searchParams?.size as string) ?? "10", 10);
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    redirect("/auth/signin");
+  }
+
+  const cashRegisterService = new CashRegisterService(prisma, session.user.id);
+
+  // Fetch the cash register assigned to the user
+  const cashRegister = await cashRegisterService.getCashRegisterByUserId();
+
+  // Now, get the sessions associated with the cash register
+  const cashRegisterId = cashRegister?.id;
+
+  let sessions: any[] = [];
+  if (cashRegisterId) {
+    // Instantiate the SessionService with the cashRegisterId
+    const sessionService = new SessionService(prisma, cashRegisterId);
+    // Get sessions (e.g., page 1, size 10)
+    sessions = await sessionService.getSessions(page, size);
+  }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Welcome to Cash Register App</h1>
-      {session ? (
-        <div>
-          <p>Hello, {session.user.name}</p>
-          <Button type="primary" onClick={() => signOut()}>
-            Sign Out
-          </Button>
-        </div>
-      ) : (
-        <Button type="primary" onClick={() => router.push("/auth/signin")}>
-          Sign In
-        </Button>
-      )}
-    </div>
+    <LayoutCCAA>
+      <CashRegister cashRegister={cashRegister} sessions={sessions} />
+    </LayoutCCAA>
   );
 }
