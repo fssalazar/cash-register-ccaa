@@ -3,10 +3,10 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prismaClient";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { CashRegisterService } from "@/services/cash-register";
 import { SessionService } from "@/services/sessions";
 import { Session } from "@/app/components/features/Session/session";
+import { authOptions } from "@/lib/authOptions";
 
 interface PageProps {
   params: {
