@@ -22,15 +22,39 @@ export function ClosingSession({ session }: { session: any }) {
 
   const router = useRouter();
 
-  function getTotalTape() {
+  function getTotalReceived() {
     if (!session || !session.records || !Array.isArray(session.records)) {
       return 0; // Handle cases where session or records are undefined
     }
 
-    const total = session.records.reduce(
-      (sum: any, record: any) => sum + Number(record.value),
-      0
-    );
+    const total = session.records.reduce((sum: any, record: any) => {
+      if (record.action === "EXE" || record.action === "EXS") {
+        return sum - Number(record.value);
+      }
+      if (record.action === "RL" || record.action === "EXR") {
+        return (sum = sum);
+      }
+      return sum + Number(record.value);
+    }, 0);
+
+    return total;
+  }
+
+  function getTotalCollectedMoney() {
+    if (!session || !session.records || !Array.isArray(session.records)) {
+      return 0; // Handle cases where session or records are undefined
+    }
+
+    const total = session.records.reduce((sum: any, record: any) => {
+      if (record.action === "RL") {
+        return sum + Number(record.value);
+      }
+      if (record.action === "EXR") {
+        return sum - Number(record.value);
+      }
+      return sum;
+    }, 0);
+
     return total;
   }
 
@@ -54,15 +78,22 @@ export function ClosingSession({ session }: { session: any }) {
       return sum + value * multiplier;
     }, 0);
 
-    form.setFieldsValue({ total: total.toFixed(2), money: total.toFixed(2) });
+    form.setFieldsValue({
+      total: total.toFixed(2),
+      difference:
+        total -
+        (session.openAmount + getTotalReceived() - getTotalCollectedMoney()),
+    });
   };
 
   useEffect(() => {
     console.log("q");
     form.setFieldsValue({
-      totalTape: getTotalTape(),
+      totalTape:
+        session.openAmount + getTotalReceived() - getTotalCollectedMoney(),
       initial: session.openAmount || 0,
-      received: getTotalTape() + session.openAmount,
+      received: getTotalReceived(),
+      collected: getTotalCollectedMoney(),
       difference: 0,
     });
   }, [form, session.records, session]);
@@ -210,6 +241,7 @@ export function ClosingSession({ session }: { session: any }) {
                   {[
                     { label: "Inicial", field: "initial" },
                     { label: "Recebido", field: "received" },
+                    { label: "Recolhido", field: "collected" },
                     { label: "Total fita", field: "totalTape" },
                   ].map(({ label, field }) => (
                     <Form.Item key={field} name={field} label={label}>
@@ -221,7 +253,8 @@ export function ClosingSession({ session }: { session: any }) {
                         disabled={
                           field === "initial" ||
                           field === "totalTape" ||
-                          field === "received"
+                          field === "received" ||
+                          field === "collected"
                         }
                       />
                     </Form.Item>
@@ -235,7 +268,6 @@ export function ClosingSession({ session }: { session: any }) {
                     { label: "Cartão", field: "card" },
                     { label: "Cheque", field: "check" },
                     { label: "Dinheiro", field: "money" },
-                    { label: "Diferença", field: "difference" },
                   ].map(({ label, field }) => (
                     <Form.Item key={field} name={field} label={label}>
                       <InputNumber
@@ -243,10 +275,24 @@ export function ClosingSession({ session }: { session: any }) {
                         step={0.01}
                         placeholder="R$"
                         className="w-full"
-                        disabled={field === "money" || field === "difference"}
+                        disabled={field === "difference"}
                       />
                     </Form.Item>
                   ))}
+                </div>
+                <div>
+                  <Form.Item>
+                    <Typography.Text strong>Diferença:</Typography.Text>
+                  </Form.Item>
+                  <Form.Item name="difference">
+                    <InputNumber
+                      min={0}
+                      step={0.01}
+                      placeholder="R$"
+                      className="w-full"
+                      disabled
+                    />
+                  </Form.Item>
                 </div>
               </div>
             </Card>

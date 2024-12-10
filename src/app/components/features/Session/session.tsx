@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 "use client";
 
 import { createRecord } from "@/app/actions/createRecord";
@@ -27,6 +28,8 @@ export function Session({ session }: { session: any }) {
   const [openCreateRecordModal, setOpenCreateRecordModal] = useState(false);
   const router = useRouter();
 
+  console.log(session);
+
   // Reference for the closing section
   const closingSectionRef = useRef<HTMLDivElement>(null);
 
@@ -35,6 +38,21 @@ export function Session({ session }: { session: any }) {
       closingSectionRef.current.scrollIntoView({ behavior: "smooth" });
     }
   };
+
+  function getTagColor(action: string) {
+    if (
+      action === "EXE" ||
+      action === "EXS" ||
+      action === "EXR" ||
+      action === "RL"
+    ) {
+      return "red";
+    }
+    if (action === "Abertura") {
+      return "green";
+    }
+    return "default";
+  }
 
   const columns = [
     {
@@ -47,14 +65,7 @@ export function Session({ session }: { session: any }) {
       dataIndex: "action",
       key: "action",
       render: (text: any, record: any) => (
-        <Tag
-          color={`${
-            record.action === "EXE" || record.action === "EXS"
-              ? "red"
-              : "default"
-          }`}
-          key={text}
-        >
+        <Tag color={getTagColor(record.action)} key={text}>
           {text}
         </Tag>
       ),
@@ -66,7 +77,9 @@ export function Session({ session }: { session: any }) {
       render: (text: any, record: any) => (
         <span
           className={`${
-            record.action === "EXE" || record.action === "EXS"
+            record.action === "EXE" ||
+            record.action === "EXS" ||
+            record.action === "EXR"
               ? "line-through"
               : ""
           }`}
@@ -84,6 +97,16 @@ export function Session({ session }: { session: any }) {
     data: new Date(record.datetime).toLocaleString(),
     amount: `R$ ${record.value.toFixed(2).replace(".", ",")}`,
   }));
+
+  const openAmountRow = {
+    key: "openAmount",
+    code: "Valor inicial",
+    action: "Abertura",
+    data: new Date(session.openDate).toLocaleString(),
+    amount: `R$ ${session.openAmount.toFixed(2).replace(".", ",")}`,
+  };
+
+  dataSource?.unshift(openAmountRow);
 
   const handleCreateRecord = async () => {
     try {
@@ -131,6 +154,7 @@ export function Session({ session }: { session: any }) {
               <p>RL - Recolhimento</p>
               <p>EXE - Extorno Entrada </p>
               <p>EXS - Extorno Saída</p>
+              <p>EXR - Extorno Recolhimento</p>
             </div>
           </div>
           <Row justify="center" className="p-12 w-full">
@@ -138,10 +162,10 @@ export function Session({ session }: { session: any }) {
               <div className="flex items-start justify-between">
                 <div>
                   <Typography.Title level={3}>
-                    Caixas anteriores
+                    Caixa registradora
                   </Typography.Title>
                   <Typography.Text type="secondary">
-                    Clique sobre o caixa que queria consultar.
+                    {new Date(session.openDate).toLocaleString()}
                   </Typography.Text>
                 </div>
                 <div className="flex gap-4">
@@ -202,6 +226,7 @@ export function Session({ session }: { session: any }) {
                   <Select.Option value="RL">RL</Select.Option>
                   <Select.Option value="EXE">EXE</Select.Option>
                   <Select.Option value="EXS">EXS</Select.Option>
+                  <Select.Option value="EXR">EXR</Select.Option>
                 </Select>
               </Form.Item>
               <Form.Item
@@ -213,13 +238,18 @@ export function Session({ session }: { session: any }) {
               >
                 <InputNumber
                   min={0}
-                  step={0.01}
                   style={{ width: "100%" }}
                   formatter={(value) =>
-                    `R$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                    `R$ ${value}`
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                      .replace(".", ",")
                   }
-                  parser={(value: any) =>
-                    value.replace(/R\$\s?|\./g, "").replace(",", ".")
+                  // @ts-ignore
+                  parser={(value) =>
+                    value!
+                      .replace(/R\$\s?/g, "")
+                      .replace(/\./g, "")
+                      .replace(",", ".")
                   }
                 />
               </Form.Item>

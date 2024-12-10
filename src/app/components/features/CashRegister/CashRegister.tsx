@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // components/CashRegister.tsx
 
@@ -175,13 +176,18 @@ export function CashRegister({ cashRegister, sessions }: Props) {
           >
             <InputNumber
               min={0}
-              step={0.01}
               style={{ width: "100%" }}
               formatter={(value) =>
-                `R$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                `R$ ${value}`
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  .replace(".", ",")
               }
-              parser={(value: any) =>
-                value.replace(/R\$\s?|\./g, "").replace(",", ".")
+              // @ts-ignore
+              parser={(value) =>
+                value!
+                  .replace(/R\$\s?/g, "")
+                  .replace(/\./g, "")
+                  .replace(",", ".")
               }
             />
           </Form.Item>
