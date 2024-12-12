@@ -22,7 +22,6 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createSession } from "@/app/actions/createSession";
 import dayjs from "dayjs";
-import { getTotalCollectedMoney, getTotalReceived } from "@/utils";
 
 interface Props {
   cashRegister: any;
