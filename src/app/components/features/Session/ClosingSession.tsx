@@ -2,6 +2,7 @@
 "use client";
 
 import { closeSession } from "@/app/actions/closingSession";
+import { getTotalCollectedMoney, getTotalReceived } from "@/utils";
 import {
   Button,
   Card,
@@ -21,42 +22,6 @@ export function ClosingSession({ session }: { session: any }) {
   const [form] = Form.useForm();
 
   const router = useRouter();
-
-  function getTotalReceived() {
-    if (!session || !session.records || !Array.isArray(session.records)) {
-      return 0; // Handle cases where session or records are undefined
-    }
-
-    const total = session.records.reduce((sum: any, record: any) => {
-      if (record.action === "EXE" || record.action === "EXS") {
-        return sum - Number(record.value);
-      }
-      if (record.action === "RL" || record.action === "EXR") {
-        return (sum = sum);
-      }
-      return sum + Number(record.value);
-    }, 0);
-
-    return total;
-  }
-
-  function getTotalCollectedMoney() {
-    if (!session || !session.records || !Array.isArray(session.records)) {
-      return 0; // Handle cases where session or records are undefined
-    }
-
-    const total = session.records.reduce((sum: any, record: any) => {
-      if (record.action === "RL") {
-        return sum + Number(record.value);
-      }
-      if (record.action === "EXR") {
-        return sum - Number(record.value);
-      }
-      return sum;
-    }, 0);
-
-    return total;
-  }
 
   const onValuesChange = (changedValues: any, allValues: any) => {
     const denominations = [
@@ -80,20 +45,25 @@ export function ClosingSession({ session }: { session: any }) {
 
     form.setFieldsValue({
       total: total.toFixed(2),
-      difference:
-        total -
-        (session.openAmount + getTotalReceived() - getTotalCollectedMoney()),
+      difference: (
+        (total * 100 -
+          (session.openAmount * 100 +
+            getTotalReceived(session) * 100 -
+            getTotalCollectedMoney(session) * 100)) /
+        100
+      ).toFixed(2),
     });
   };
 
   useEffect(() => {
-    console.log("q");
     form.setFieldsValue({
       totalTape:
-        session.openAmount + getTotalReceived() - getTotalCollectedMoney(),
+        session.openAmount +
+        getTotalReceived(session) -
+        getTotalCollectedMoney(session),
       initial: session.openAmount || 0,
-      received: getTotalReceived(),
-      collected: getTotalCollectedMoney(),
+      received: getTotalReceived(session),
+      collected: getTotalCollectedMoney(session),
       difference: 0,
     });
   }, [form, session.records, session]);
@@ -250,6 +220,8 @@ export function ClosingSession({ session }: { session: any }) {
                         step={0.01}
                         placeholder="R$"
                         className="w-full"
+                        prefix="R$ "
+                        decimalSeparator=","
                         disabled={
                           field === "initial" ||
                           field === "totalTape" ||
@@ -273,9 +245,10 @@ export function ClosingSession({ session }: { session: any }) {
                       <InputNumber
                         min={0}
                         step={0.01}
-                        placeholder="R$"
                         className="w-full"
                         disabled={field === "difference"}
+                        prefix="R$ "
+                        decimalSeparator=","
                       />
                     </Form.Item>
                   ))}
@@ -291,6 +264,8 @@ export function ClosingSession({ session }: { session: any }) {
                       placeholder="R$"
                       className="w-full"
                       disabled
+                      prefix="R$ "
+                      decimalSeparator=","
                     />
                   </Form.Item>
                 </div>

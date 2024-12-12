@@ -28,8 +28,6 @@ export function Session({ session }: { session: any }) {
   const [openCreateRecordModal, setOpenCreateRecordModal] = useState(false);
   const router = useRouter();
 
-  console.log(session);
-
   // Reference for the closing section
   const closingSectionRef = useRef<HTMLDivElement>(null);
 
@@ -237,20 +235,11 @@ export function Session({ session }: { session: any }) {
                 ]}
               >
                 <InputNumber
-                  min={0}
                   style={{ width: "100%" }}
-                  formatter={(value) =>
-                    `R$ ${value}`
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                      .replace(".", ",")
-                  }
-                  // @ts-ignore
-                  parser={(value) =>
-                    value!
-                      .replace(/R\$\s?/g, "")
-                      .replace(/\./g, "")
-                      .replace(",", ".")
-                  }
+                  prefix="R$ "
+                  decimalSeparator=","
+                  step={0.01}
+                  min={0}
                 />
               </Form.Item>
             </Form>

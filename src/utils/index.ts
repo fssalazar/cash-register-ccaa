@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // <p>PP - Pagamento Parcela</p>
 // <p>PB - Pagamento Livros</p>
 // <p>PD - Pagamento Diverso</p>
@@ -25,3 +26,39 @@
 
 // Diferença
 //
+
+export function getTotalReceived(session: any) {
+  if (!session || !session.records || !Array.isArray(session.records)) {
+    return 0; // Handle cases where session or records are undefined
+  }
+
+  const total = session.records.reduce((sum: any, record: any) => {
+    if (record.action === "EXE" || record.action === "EXS") {
+      return sum - Number(record.value);
+    }
+    if (record.action === "RL" || record.action === "EXR") {
+      return (sum = sum);
+    }
+    return sum + Number(record.value);
+  }, 0);
+
+  return total;
+}
+
+export function getTotalCollectedMoney(session: any) {
+  if (!session || !session.records || !Array.isArray(session.records)) {
+    return 0; // Handle cases where session or records are undefined
+  }
+
+  const total = session.records.reduce((sum: any, record: any) => {
+    if (record.action === "RL") {
+      return sum + Number(record.value);
+    }
+    if (record.action === "EXR") {
+      return sum - Number(record.value);
+    }
+    return sum;
+  }, 0);
+
+  return total;
+}

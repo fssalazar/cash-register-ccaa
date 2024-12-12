@@ -26,7 +26,17 @@ export async function createRecord(data: CreateRecordData) {
   }
 
   // Optionally, validate the action value
-  const validActions = ["PP", "PB", "PD", "RB", "RD", "RL", "EXE", "EXS"];
+  const validActions = [
+    "PP",
+    "PB",
+    "PD",
+    "RB",
+    "RD",
+    "RL",
+    "EXE",
+    "EXS",
+    "EXR",
+  ];
   if (!validActions.includes(action)) {
     throw new Error("Ação inválida.");
   }

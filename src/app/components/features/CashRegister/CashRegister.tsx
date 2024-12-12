@@ -22,6 +22,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createSession } from "@/app/actions/createSession";
 import dayjs from "dayjs";
+import { getTotalCollectedMoney, getTotalReceived } from "@/utils";
 
 interface Props {
   cashRegister: any;
@@ -33,8 +34,6 @@ export function CashRegister({ cashRegister, sessions }: Props) {
   const [form] = Form.useForm();
   const router = useRouter();
   const [api, contextHolder] = notification.useNotification();
-
-  console.log("sessions", sessions);
 
   // Determine if a session is currently open
   const isSessionOpen = useMemo(() => {
@@ -56,6 +55,8 @@ export function CashRegister({ cashRegister, sessions }: Props) {
       </Typography.Paragraph>
     );
   }
+
+  console.log(cashRegister);
 
   // Define the columns for the table
   const columns = [
@@ -92,7 +93,7 @@ export function CashRegister({ cashRegister, sessions }: Props) {
     data: new Date(sess.openDate).toLocaleString(),
     caixa: cashRegister.name,
     fechamento: sess.closeDate ? (
-      <Tag>Fechado: R${sess.closure?.rereceivedAmount.toFixed(2)}</Tag>
+      <Tag>{`Fechado: R$${sess.closure.totalRecordsAmount}`}</Tag>
     ) : (
       <Tag color="green">Aberto</Tag>
     ),
@@ -175,20 +176,11 @@ export function CashRegister({ cashRegister, sessions }: Props) {
             ]}
           >
             <InputNumber
-              min={0}
               style={{ width: "100%" }}
-              formatter={(value) =>
-                `R$ ${value}`
-                  .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                  .replace(".", ",")
-              }
-              // @ts-ignore
-              parser={(value) =>
-                value!
-                  .replace(/R\$\s?/g, "")
-                  .replace(/\./g, "")
-                  .replace(",", ".")
-              }
+              prefix="R$ "
+              decimalSeparator=","
+              step={0.01}
+              min={0}
             />
           </Form.Item>
           <Form.Item
