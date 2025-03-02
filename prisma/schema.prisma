@@ -52,6 +52,7 @@ model Closure {
 
 model Bills {
   id             String   @id @default(uuid()) @db.Uuid
+  twoHundred        Int @default(0)
   hundred        Int
   fifty          Int
   twenty         Int

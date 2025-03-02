@@ -11,11 +11,17 @@ interface CreateRecordDTO {
 
 export class SessionService {
   private prisma: PrismaClient;
-  private cashRegisterId: string;
+  private cashRegisterId?: string;
+  private companyId?: string;
 
-  constructor(prisma: PrismaClient, cashRegisterId: string) {
+  constructor(
+    prisma: PrismaClient,
+    cashRegisterId?: string,
+    companyId?: string
+  ) {
     this.prisma = prisma;
     this.cashRegisterId = cashRegisterId;
+    this.companyId = companyId;
   }
 
   /**
@@ -74,6 +80,9 @@ export class SessionService {
    * Creates a new session.
    */
   async createSession(openDate: Date, openAmount: number): Promise<Session> {
+    if (!this.cashRegisterId) {
+      throw new Error("Cash register ID is required");
+    }
     try {
       const session = await this.prisma.session.create({
         data: {
@@ -104,5 +113,51 @@ export class SessionService {
       },
     });
     return record;
+  }
+
+  /**
+   * Retrieves paginated sessions for all cash registers in a company.
+   * Includes cash register and user information.
+   */
+  async getSessionsByCompanyId(page: number, size: number): Promise<Session[]> {
+    if (!this.companyId) {
+      throw new Error("Company ID is required");
+    }
+    try {
+      const sessions = await this.prisma.session.findMany({
+        where: {
+          cashRegister: {
+            companyId: this.companyId,
+          },
+        },
+        skip: (page - 1) * size,
+        take: size,
+        orderBy: {
+          openDate: "desc",
+        },
+        select: {
+          id: true,
+          openDate: true,
+          openAmount: true,
+          closeDate: true,
+          closure: true,
+          cashRegisterId: true,
+          cashRegister: {
+            select: {
+              name: true,
+              user: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      return sessions;
+    } catch (error) {
+      console.error("Error fetching company sessions:", error);
+      throw error;
+    }
   }
 }

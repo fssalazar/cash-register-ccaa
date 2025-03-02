@@ -24,6 +24,10 @@ export default async function Home({ searchParams }: PageProps) {
     redirect("/auth/signin");
   }
 
+  if (session.user.role === "Admin") {
+    redirect("/admin/dashboard");
+  }
+
   const cashRegisterService = new CashRegisterService(prisma, session.user.id);
 
   // Fetch the cash register assigned to the user

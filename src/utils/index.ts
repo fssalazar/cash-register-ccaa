@@ -29,25 +29,30 @@
 
 export function getTotalReceived(session: any) {
   if (!session || !session.records || !Array.isArray(session.records)) {
-    return 0; // Handle cases where session or records are undefined
+    return "0.00"; // Return formatted string with 2 decimal places
   }
 
   const total = session.records.reduce((sum: any, record: any) => {
-    if (record.action === "EXE" || record.action === "EXS") {
+    if (
+      record.action === "EXE" ||
+      record.action === "PD" ||
+      record.action === "PB" ||
+      record.action === "PP"
+    ) {
       return sum - Number(record.value);
     }
     if (record.action === "RL" || record.action === "EXR") {
-      return (sum = sum);
+      return sum;
     }
     return sum + Number(record.value);
   }, 0);
 
-  return total;
+  return total.toFixed(2);
 }
 
 export function getTotalCollectedMoney(session: any) {
   if (!session || !session.records || !Array.isArray(session.records)) {
-    return 0; // Handle cases where session or records are undefined
+    return "0.00"; // Return formatted string with 2 decimal places
   }
 
   const total = session.records.reduce((sum: any, record: any) => {
@@ -60,5 +65,5 @@ export function getTotalCollectedMoney(session: any) {
     return sum;
   }, 0);
 
-  return total;
+  return total.toFixed(2);
 }

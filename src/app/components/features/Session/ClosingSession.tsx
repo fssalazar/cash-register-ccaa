@@ -25,6 +25,7 @@ export function ClosingSession({ session }: { session: any }) {
 
   const onValuesChange = (changedValues: any, allValues: any) => {
     const denominations = [
+      { field: "twoHundred", multiplier: 100 },
       { field: "hundred", multiplier: 100 },
       { field: "fifty", multiplier: 50 },
       { field: "twenty", multiplier: 20 },
@@ -44,26 +45,31 @@ export function ClosingSession({ session }: { session: any }) {
     }, 0);
 
     form.setFieldsValue({
-      total: total.toFixed(2),
+      total: (Math.round(total * 100) / 100).toFixed(2),
       difference: (
-        (total * 100 -
-          (session.openAmount * 100 +
-            getTotalReceived(session) * 100 -
-            getTotalCollectedMoney(session) * 100)) /
-        100
+        Math.round(
+          total * 100 -
+            (session.openAmount * 100 +
+              parseFloat(getTotalReceived(session)) * 100 -
+              parseFloat(getTotalCollectedMoney(session)) * 100)
+        ) / 100
       ).toFixed(2),
     });
   };
 
   useEffect(() => {
     form.setFieldsValue({
-      totalTape:
-        session.openAmount +
-        getTotalReceived(session) -
-        getTotalCollectedMoney(session),
+      totalTape: (
+        Math.round(
+          (session.openAmount +
+            parseFloat(getTotalReceived(session)) -
+            parseFloat(getTotalCollectedMoney(session))) *
+            100
+        ) / 100
+      ).toFixed(2),
       initial: session.openAmount || 0,
-      received: getTotalReceived(session),
-      collected: getTotalCollectedMoney(session),
+      received: parseFloat(getTotalReceived(session)),
+      collected: parseFloat(getTotalCollectedMoney(session)),
       difference: 0,
     });
   }, [form, session.records, session]);
@@ -83,6 +89,7 @@ export function ClosingSession({ session }: { session: any }) {
       };
 
       const billsData = {
+        twoHundred: Number(values.twoHundred || 0),
         hundred: Number(values.hundred || 0),
         fifty: Number(values.fifty || 0),
         twenty: Number(values.twenty || 0),
@@ -131,9 +138,10 @@ export function ClosingSession({ session }: { session: any }) {
               <Typography.Text type="danger">
                 Atenção: Essa é uma ação irreversível.
               </Typography.Text>
-              <div className="w-full flex items-center">
+              <div className="w-full flex items-start gap-2">
                 <Row gutter={[16, 16]} className="mt-4">
                   {[
+                    { label: "200", field: "twoHundred" },
                     { label: "100", field: "hundred" },
                     { label: "50", field: "fifty" },
                     { label: "20", field: "twenty" },

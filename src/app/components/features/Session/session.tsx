@@ -42,9 +42,14 @@ export function Session({ session }: { session: any }) {
       action === "EXE" ||
       action === "EXS" ||
       action === "EXR" ||
-      action === "RL"
+      action === "PB" ||
+      action === "PD" ||
+      action === "PP"
     ) {
       return "red";
+    }
+    if (action === "RL") {
+      return "blue";
     }
     if (action === "Abertura") {
       return "green";
@@ -147,6 +152,7 @@ export function Session({ session }: { session: any }) {
               <p>PP - Pagamento Parcela</p>
               <p>PB - Pagamento Livros</p>
               <p>PD - Pagamento Diverso</p>
+              <p>RP - Recebimento de Parcela</p>
               <p>RB - Recebimento Livros</p>
               <p>RD - Recebimento Diverso</p>
               <p>RL - Recolhimento</p>
@@ -219,6 +225,7 @@ export function Session({ session }: { session: any }) {
                   <Select.Option value="PP">PP</Select.Option>
                   <Select.Option value="PB">PB</Select.Option>
                   <Select.Option value="PD">PD</Select.Option>
+                  <Select.Option value="RB">RP</Select.Option>
                   <Select.Option value="RB">RB</Select.Option>
                   <Select.Option value="RD">RD</Select.Option>
                   <Select.Option value="RL">RL</Select.Option>
