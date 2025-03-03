@@ -67,6 +67,8 @@ export class SessionService {
         },
         include: {
           records: true,
+          bills: true,
+          closure: true,
         },
       });
       return session;

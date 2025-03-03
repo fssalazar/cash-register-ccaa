@@ -3,10 +3,12 @@ import { PrismaClient, CashRegister } from "@prisma/client";
 export class CashRegisterService {
   private prisma: PrismaClient;
   private userId: string;
+  private companyId?: string;
 
-  constructor(prisma: PrismaClient, userId: string) {
+  constructor(prisma: PrismaClient, userId: string, companyId?: string) {
     this.prisma = prisma;
     this.userId = userId;
+    this.companyId = companyId;
   }
 
   /**
@@ -44,13 +46,17 @@ export class CashRegisterService {
    * Retrieves all cash registers associated with the given companyId.
    * @param companyId - The ID of the company.
    */
-  async getCashRegistersByCompanyId(
-    companyId: string
-  ): Promise<CashRegister[]> {
+  async getCashRegistersByCompanyId(): Promise<CashRegister[]> {
+    if (!this.companyId) {
+      throw new Error("Company ID is required");
+    }
     try {
       const cashRegisters = await this.prisma.cashRegister.findMany({
         where: {
-          companyId: companyId,
+          companyId: this.companyId,
+        },
+        include: {
+          user: true,
         },
       });
       return cashRegisters;

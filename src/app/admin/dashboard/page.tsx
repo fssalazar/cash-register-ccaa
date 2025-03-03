@@ -6,6 +6,8 @@ import { authOptions } from "@/lib/authOptions";
 import { LayoutCCAA } from "@/app/components/Layout";
 import { prisma } from "@/lib/prismaClient";
 import { SessionService } from "@/services/sessions";
+import { CashRegisterService } from "@/services/cash-register";
+import { CashRegister } from "@/app/components/features/Admin/CashRegister";
 interface PageProps {
   searchParams?: Record<string, string | string[]>;
 }
@@ -30,9 +32,15 @@ const AdminDashboard = async ({ searchParams }: PageProps) => {
   );
   const sessions = await sessionService.getSessionsByCompanyId(page, size);
 
+  const cashRegisterService = new CashRegisterService(
+    prisma,
+    session.user.id,
+    session.user.companyId
+  );
+  const cashRegisters = await cashRegisterService.getCashRegistersByCompanyId();
   return (
     <LayoutCCAA>
-      <div>Welcome to the Admin Dashboard, {session.user.name}</div>
+      <CashRegister cashRegisters={cashRegisters} sessions={sessions} />
     </LayoutCCAA>
   );
 };

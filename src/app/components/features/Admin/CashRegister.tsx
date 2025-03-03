@@ -4,37 +4,22 @@
 
 "use client";
 
-import {
-  Typography,
-  Button,
-  Row,
-  Table,
-  Tag,
-  Modal,
-  Form,
-  InputNumber,
-  DatePicker,
-  notification,
-} from "antd";
+import { Typography, Button, Row, Table, Tag, notification, Alert } from "antd";
 
-import { EllipsisOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createSession } from "@/app/actions/createSession";
-import dayjs from "dayjs";
 
 interface Props {
-  cashRegister: any;
+  cashRegisters: any[];
   sessions: any[];
 }
 
-export function CashRegister({ cashRegister }: Props) {
-  const [openCreateSessionModal, setOpenCreateSessionModal] = useState(false);
-  const [form] = Form.useForm();
+export function CashRegister({ cashRegisters, sessions }: Props) {
   const router = useRouter();
   const [api, contextHolder] = notification.useNotification();
+  const [selectedSessions, setSelectedSessions] = useState<any[]>([]);
 
-  if (!cashRegister) {
+  if (!cashRegisters) {
     return (
       <Typography.Paragraph>
         Você não tem nenhum caixa atribuído.
@@ -42,7 +27,7 @@ export function CashRegister({ cashRegister }: Props) {
     );
   }
 
-  console.log(cashRegister);
+  console.log(cashRegisters);
 
   // Define the columns for the table
   const columns = [
@@ -57,71 +42,64 @@ export function CashRegister({ cashRegister }: Props) {
       key: "caixa",
     },
     {
+      title: "Usuário",
+      dataIndex: "operador",
+      key: "operador",
+    },
+    {
       title: "Fechamento",
       dataIndex: "fechamento",
       key: "fechamento",
     },
-    {
-      title: "",
-      key: "action",
-      width: "100px",
-      render: (text: any, record: any) => (
-        <Button onClick={() => handleAction(record)}>
-          <EllipsisOutlined />
-        </Button>
-      ),
-    },
   ];
 
   // Prepare the data source for the table
-  const dataSource = sessions.map((sess: any) => ({
-    key: sess.id,
-    data: new Date(sess.openDate).toLocaleString(),
-    caixa: cashRegister.name,
-    fechamento: sess.closeDate ? (
-      <Tag>{`Fechado: R$${sess.closure.totalRecordsAmount}`}</Tag>
-    ) : (
-      <Tag color="green">Aberto</Tag>
-    ),
-  }));
+  const dataSource = sessions.map((sess: any) => {
+    const cashRegister = cashRegisters.find(
+      (cr) => cr.id === sess.cashRegisterId
+    );
+    return {
+      key: sess.id,
+      data: new Date(sess.openDate).toLocaleString(),
+      caixa: cashRegister?.name || "N/A",
+      operador: cashRegister?.user?.name || "N/A",
+      fechamento: sess.closeDate ? (
+        <Tag>{`Fechado: R$${sess.closure.totalRecordsAmount}`}</Tag>
+      ) : (
+        <Tag color="green">Aberto</Tag>
+      ),
+      cashRegisterId: sess.cashRegisterId,
+      sessionId: sess.id,
+    };
+  });
 
-  // Handle action button click
-  const handleAction = (record: any) => {
-    // Navigate to session details
-    router.push(`/cash-registers/${cashRegister.id}/sessions/${record.key}`);
-  };
-
-  // Handle form submission
-  const handleCreateSession = async () => {
-    try {
-      // Validate the form fields
-      const values = await form.validateFields();
-      // Call the createSession function with form data
-      await createSession({
-        openAmount: values.openAmount,
-        openDate: values.openDate.toDate(), // Convert to JavaScript Date
-      });
-      // Show success message
-      api.success({ message: "Sessão criada com sucesso!" });
-      // Close the modal
-      setOpenCreateSessionModal(false);
-      // Reset the form
-      form.resetFields();
-      // Refresh the page or update the sessions list
-      router.refresh();
-    } catch (error: any) {
-      console.error("Error creating session:", error);
-      api.error({ message: "Erro ao criar a sessão." });
-    }
-  };
-
-  // Handle "Abrir caixa" button click
-  const handleOpenModal = () => {
-    if (isSessionOpen) {
-      api.warning({ message: "Você já possui uma sessão aberta." });
+  const handleCompareClick = () => {
+    if (selectedSessions.length > 2) {
+      api.warning({ message: "Selecione exatamente 2 sessões para comparar." });
       return;
     }
-    setOpenCreateSessionModal(true);
+
+    const [session1, session2] = selectedSessions;
+    if (session2) {
+      router.push(
+        `/admin/sessions?session1=${session1.sessionId}&cashRegister1=${session1.cashRegisterId}&session2=${session2.sessionId}&cashRegister2=${session2.cashRegisterId}`
+      );
+    } else {
+      router.push(
+        `/admin/sessions?session1=${session1.sessionId}&cashRegister1=${session1.cashRegisterId}`
+      );
+    }
+  };
+
+  const rowSelection = {
+    selectedRowKeys: selectedSessions.map((session) => session.key),
+    onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
+      if (selectedRows.length > 2) {
+        api.warning({ message: "Você pode selecionar no máximo 2 sessões." });
+        return;
+      }
+      setSelectedSessions(selectedRows);
+    },
   };
 
   return (
@@ -132,62 +110,63 @@ export function CashRegister({ cashRegister }: Props) {
           <div className="flex items-start justify-between">
             <div className="w-28" />
             <div className="text-center">
-              <Typography.Title level={3}>Caixas Anteriores</Typography.Title>
+              <Typography.Title level={3}>Caixas anteriores</Typography.Title>
               <Typography.Text type="secondary">
-                Clique sobre o caixa que deseja consultar.
+                Selecione até 2 sessões para comparar.
               </Typography.Text>
             </div>
-            <Button onClick={handleOpenModal} type="primary">
-              Abrir caixa
+            <Button
+              onClick={handleCompareClick}
+              type="primary"
+              disabled={
+                selectedSessions.length === 0 && selectedSessions.length > 2
+              }
+            >
+              Visualizar Caixas
             </Button>
           </div>
-          <Table className="mt-8" columns={columns} dataSource={dataSource} />
+
+          <Table
+            className="mt-8 [&_.ant-table-row-selected>td]:!bg-blue-50"
+            columns={columns}
+            dataSource={dataSource}
+            rowSelection={{
+              type: "checkbox",
+              ...rowSelection,
+            }}
+            pagination={{
+              defaultPageSize: 10,
+              showSizeChanger: true,
+              showTotal: (total) => `Total ${total} sessões`,
+            }}
+          />
+
+          {/* Selection Status */}
+          <div className="mt-4">
+            {selectedSessions.length === 0 && (
+              <Alert
+                type="info"
+                message="Selecione uma ou duas sessões para comparar"
+                showIcon
+              />
+            )}
+            {selectedSessions.length === 1 && (
+              <Alert
+                type="warning"
+                message="Selecione mais uma sessão para poder comparar"
+                showIcon
+              />
+            )}
+            {selectedSessions.length === 2 && (
+              <Alert
+                type="success"
+                message="Clique em 'Visualizar Caixas' para comparar as sessões selecionadas"
+                showIcon
+              />
+            )}
+          </div>
         </div>
       </Row>
-      {/* Create Session Modal */}
-      <Modal
-        title="Criar Nova Sessão"
-        open={openCreateSessionModal}
-        onOk={handleCreateSession}
-        onCancel={() => setOpenCreateSessionModal(false)}
-        okText="Criar"
-        cancelText="Cancelar"
-      >
-        <Form form={form} layout="vertical" name="create_session_form">
-          <Form.Item
-            name="openAmount"
-            label="Valor Inicial"
-            rules={[
-              { required: true, message: "Por favor, insira o valor inicial" },
-            ]}
-          >
-            <InputNumber
-              style={{ width: "100%" }}
-              prefix="R$ "
-              decimalSeparator=","
-              step={0.01}
-              min={0}
-            />
-          </Form.Item>
-          <Form.Item
-            name="openDate"
-            label="Data de Abertura"
-            rules={[
-              {
-                required: true,
-                message: "Por favor, selecione a data de abertura",
-              },
-            ]}
-            initialValue={dayjs()}
-          >
-            <DatePicker
-              format="DD/MM/YYYY HH:mm"
-              showTime={{ format: "HH:mm" }}
-              style={{ width: "100%" }}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
     </>
   );
 }
