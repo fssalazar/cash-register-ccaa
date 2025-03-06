@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { Card, InputNumber, Row, Table, Tag, Typography } from "antd";
+import { Card, InputNumber, Row, Table, Tag } from "antd";
 import React from "react";
 
 interface SessionRecord {
@@ -48,8 +48,6 @@ interface Session {
 interface Props {
   session: Session;
 }
-
-const { Text, Title } = Typography;
 
 export function AdminSession({ session }: Props) {
   // Table columns configuration
