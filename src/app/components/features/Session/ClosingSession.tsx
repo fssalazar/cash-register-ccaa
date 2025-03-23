@@ -8,7 +8,6 @@ import {
   Card,
   Form,
   InputNumber,
-  Layout,
   Row,
   Typography,
   Col,
@@ -16,6 +15,12 @@ import {
 } from "antd";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
+
+interface BillConfig {
+  label: string;
+  field: string;
+  value: number;
+}
 
 export function ClosingSession({ session }: { session: any }) {
   const [api, contextHolder] = notification.useNotification();
@@ -121,172 +126,220 @@ export function ClosingSession({ session }: { session: any }) {
     }
   };
 
-  return (
-    <Layout className="h-screen w-screen">
-      {contextHolder}
-      <Layout.Content className="w-full h-full p-4 mt-10">
-        <Form
-          form={form}
-          layout="vertical"
-          onValuesChange={onValuesChange}
-          onFinish={handleSubmit}
-        >
-          <Row justify={"center"} align="stretch" className="h-full gap-6">
-            {/* Left Card: Contagem dinheiro */}
-            <Card className="w-[40%]">
-              <Typography.Title level={5}>Contagem dinheiro</Typography.Title>
-              <Typography.Text type="danger">
-                Atenção: Essa é uma ação irreversível.
-              </Typography.Text>
-              <div className="w-full flex items-start gap-2">
-                <Row gutter={[16, 16]} className="mt-4">
-                  {[
-                    { label: "200", field: "twoHundred" },
-                    { label: "100", field: "hundred" },
-                    { label: "50", field: "fifty" },
-                    { label: "20", field: "twenty" },
-                    { label: "10", field: "ten" },
-                    { label: "05", field: "five" },
-                    { label: "02", field: "two" },
-                  ].map(({ label, field }) => (
-                    <React.Fragment key={field}>
-                      <Col span={12}>
-                        <Form.Item>
-                          <Typography.Text>{label}</Typography.Text>
-                        </Form.Item>
-                      </Col>
-                      <Col span={12}>
-                        <Form.Item name={field}>
-                          <InputNumber
-                            min={0}
-                            step={1}
-                            type="number"
-                            placeholder="Qtd"
-                            className="w-full"
-                          />
-                        </Form.Item>
-                      </Col>
-                    </React.Fragment>
-                  ))}
-                </Row>
-                <Row gutter={[16, 16]} className="mt-4">
-                  {[
-                    { label: "01", field: "one" },
-                    { label: "0,50", field: "fiftyCent" },
-                    { label: "0,25", field: "twentyFiveCent" },
-                    { label: "0,10", field: "tenCent" },
-                    { label: "0,05", field: "fiveCent" },
-                    { label: "Total", field: "total", disabled: true },
-                  ].map(({ label, field, disabled }) => (
-                    <React.Fragment key={field}>
-                      <Col span={12}>
-                        <Form.Item>
-                          <Typography.Text>{label}</Typography.Text>
-                        </Form.Item>
-                      </Col>
-                      <Col span={12}>
-                        <Form.Item name={field}>
-                          <InputNumber
-                            type="number"
-                            min={0}
-                            step={1}
-                            placeholder={label === "Total" ? "R$" : "Qtd"}
-                            className="w-full"
-                            disabled={disabled}
-                          />
-                        </Form.Item>
-                      </Col>
-                    </React.Fragment>
-                  ))}
-                </Row>
-              </div>
-              {/* <Button type="default">Valores de ontem</Button> */}
-            </Card>
+  const handleAmountChange = (
+    value: number | null,
+    billValue: number,
+    field: string
+  ) => {
+    if (value === null) {
+      form.setFieldValue(field, 0);
+      return;
+    }
 
-            {/* Right Card: Fechar Caixa */}
-            <Card className="w-[40%]">
-              <Typography.Title level={5}>Fechar Caixa</Typography.Title>
-              <Typography.Text type="danger">
-                Atenção: Essa é uma ação irreversível.
-              </Typography.Text>
-              <div className="w-full flex items-start gap-6">
-                <div>
-                  <Form.Item className="mt-4">
-                    <Typography.Text strong>
-                      Informação automática:
-                    </Typography.Text>
-                  </Form.Item>
-                  {[
-                    { label: "Inicial", field: "initial" },
-                    { label: "Recebido", field: "received" },
-                    { label: "Recolhido", field: "collected" },
-                    { label: "Total fita", field: "totalTape" },
-                  ].map(({ label, field }) => (
-                    <Form.Item key={field} name={field} label={label}>
-                      <InputNumber
-                        min={0}
-                        step={0.01}
-                        placeholder="R$"
-                        className="w-full"
-                        prefix="R$ "
-                        decimalSeparator=","
-                        disabled={
-                          field === "initial" ||
-                          field === "totalTape" ||
-                          field === "received" ||
-                          field === "collected"
-                        }
-                      />
-                    </Form.Item>
-                  ))}
-                </div>
-                <div>
-                  <Form.Item>
-                    <Typography.Text strong>Recolhimento:</Typography.Text>
-                  </Form.Item>
-                  {[
-                    { label: "Cartão", field: "card" },
-                    { label: "Cheque", field: "check" },
-                    { label: "Dinheiro", field: "money" },
-                  ].map(({ label, field }) => (
-                    <Form.Item key={field} name={field} label={label}>
-                      <InputNumber
-                        min={0}
-                        step={0.01}
-                        className="w-full"
-                        disabled={field === "difference"}
-                        prefix="R$ "
-                        decimalSeparator=","
-                      />
-                    </Form.Item>
-                  ))}
-                </div>
-                <div>
-                  <Form.Item>
-                    <Typography.Text strong>Diferença:</Typography.Text>
-                  </Form.Item>
-                  <Form.Item name="difference">
+    // Convert to cents to avoid floating point precision issues
+    const amountInCents = Math.round(value * 100);
+    const billValueInCents = Math.round(billValue * 100);
+
+    // Calculate quantity by dividing amount by bill value
+    const quantity = Math.round(amountInCents / billValueInCents);
+    form.setFieldValue(field, quantity);
+
+    // Trigger the total calculation
+    onValuesChange({}, form.getFieldsValue());
+  };
+
+  const billConfigs: BillConfig[] = [
+    { label: "200", field: "twoHundred", value: 200 },
+    { label: "100", field: "hundred", value: 100 },
+    { label: "50", field: "fifty", value: 50 },
+    { label: "20", field: "twenty", value: 20 },
+    { label: "10", field: "ten", value: 10 },
+    { label: "05", field: "five", value: 5 },
+    { label: "02", field: "two", value: 2 },
+    { label: "01", field: "one", value: 1 },
+    { label: "0,50", field: "fiftyCent", value: 0.5 },
+    { label: "0,25", field: "twentyFiveCent", value: 0.25 },
+    { label: "0,10", field: "tenCent", value: 0.1 },
+    { label: "0,05", field: "fiveCent", value: 0.05 },
+  ];
+
+  return (
+    <div className="w-full h-full p-4">
+      {contextHolder}
+      <Form
+        form={form}
+        layout="vertical"
+        onValuesChange={onValuesChange}
+        onFinish={handleSubmit}
+      >
+        <div className="flex gap-4 items-stretch">
+          {/* Left Card: Contagem dinheiro */}
+          <Card className="w-full">
+            <Typography.Title level={5}>Contagem dinheiro</Typography.Title>
+            <Typography.Text type="danger">
+              Atenção: Essa é uma ação irreversível.
+            </Typography.Text>
+            <div className="grid grid-cols-2 gap-8 mt-4">
+              {/* First Column */}
+              <div>
+                {billConfigs.slice(0, 6).map(({ label, field, value }) => (
+                  <div key={field} className="mb-4">
+                    <Typography.Text strong>R$ {label}</Typography.Text>
+                    <div className="space-y-2 space-x-1">
+                      <Form.Item name={`amount_${field}`} noStyle>
+                        <InputNumber
+                          min={0}
+                          step={value}
+                          placeholder="Valor"
+                          className="w-full"
+                          prefix="R$ "
+                          onChange={(val) =>
+                            handleAmountChange(val, value, field)
+                          }
+                        />
+                      </Form.Item>
+                      <Form.Item name={field} noStyle>
+                        <InputNumber
+                          min={0}
+                          disabled
+                          placeholder="Qtd"
+                          className="w-full"
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Second Column */}
+              <div>
+                {billConfigs.slice(6).map(({ label, field, value }) => (
+                  <div key={field} className="mb-4">
+                    <Typography.Text strong>R$ {label}</Typography.Text>
+                    <div className="space-y-2 space-x-1">
+                      <Form.Item name={`amount_${field}`} noStyle>
+                        <InputNumber
+                          min={0}
+                          step={value}
+                          placeholder="Valor"
+                          className="w-full"
+                          prefix="R$ "
+                          onChange={(val) =>
+                            handleAmountChange(val, value, field)
+                          }
+                        />
+                      </Form.Item>
+                      <Form.Item name={field} noStyle>
+                        <InputNumber
+                          min={0}
+                          disabled
+                          placeholder="Qtd"
+                          className="w-full"
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Total */}
+                <div className="mt-8 space-x-1">
+                  <Typography.Text strong>Total</Typography.Text>
+                  <Form.Item name="total" noStyle>
                     <InputNumber
-                      min={0}
-                      step={0.01}
-                      placeholder="R$"
-                      className="w-full"
                       disabled
+                      className="w-full"
                       prefix="R$ "
                       decimalSeparator=","
                     />
                   </Form.Item>
                 </div>
               </div>
-            </Card>
-          </Row>
-          <Row justify="center" className="mt-8">
-            <Button type="primary" htmlType="submit">
-              Salvar
-            </Button>
-          </Row>
-        </Form>
-      </Layout.Content>
-    </Layout>
+            </div>
+          </Card>
+
+          {/* Right Card: Fechar Caixa */}
+          <Card className="w-full">
+            <Typography.Title level={5}>Fechar Caixa</Typography.Title>
+            <Typography.Text type="danger">
+              Atenção: Essa é uma ação irreversível.
+            </Typography.Text>
+            <div className="w-full flex items-start gap-6">
+              <div>
+                <Form.Item className="mt-4">
+                  <Typography.Text strong>
+                    Informação automática:
+                  </Typography.Text>
+                </Form.Item>
+                {[
+                  { label: "Inicial", field: "initial" },
+                  { label: "Recebido", field: "received" },
+                  { label: "Recolhido", field: "collected" },
+                  { label: "Total fita", field: "totalTape" },
+                ].map(({ label, field }) => (
+                  <Form.Item key={field} name={field} label={label}>
+                    <InputNumber
+                      min={0}
+                      step={0.01}
+                      placeholder="R$"
+                      className="w-full"
+                      prefix="R$ "
+                      decimalSeparator=","
+                      disabled={
+                        field === "initial" ||
+                        field === "totalTape" ||
+                        field === "received" ||
+                        field === "collected"
+                      }
+                    />
+                  </Form.Item>
+                ))}
+              </div>
+              <div>
+                <Form.Item>
+                  <Typography.Text strong>Recolhimento:</Typography.Text>
+                </Form.Item>
+                {[
+                  { label: "Cartão", field: "card" },
+                  { label: "Cheque", field: "check" },
+                  { label: "Dinheiro", field: "money" },
+                ].map(({ label, field }) => (
+                  <Form.Item key={field} name={field} label={label}>
+                    <InputNumber
+                      min={0}
+                      step={0.01}
+                      className="w-full"
+                      disabled={field === "difference"}
+                      prefix="R$ "
+                      decimalSeparator=","
+                    />
+                  </Form.Item>
+                ))}
+              </div>
+              <div>
+                <Form.Item>
+                  <Typography.Text strong>Diferença:</Typography.Text>
+                </Form.Item>
+                <Form.Item name="difference">
+                  <InputNumber
+                    min={0}
+                    step={0.01}
+                    placeholder="R$"
+                    className="w-full"
+                    disabled
+                    prefix="R$ "
+                    decimalSeparator=","
+                  />
+                </Form.Item>
+              </div>
+            </div>
+          </Card>
+        </div>
+        <Row justify="center" className="mt-8">
+          <Button type="primary" htmlType="submit">
+            Salvar
+          </Button>
+        </Row>
+      </Form>
+    </div>
   );
 }

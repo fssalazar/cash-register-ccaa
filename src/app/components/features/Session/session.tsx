@@ -1,17 +1,13 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 "use client";
 
 import { createRecord } from "@/app/actions/createRecord";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Button,
-  Card,
   Form,
   Input,
   InputNumber,
   Modal,
   notification,
-  Row,
   Select,
   Table,
   Tag,
@@ -142,120 +138,112 @@ export function Session({ session }: { session: any }) {
   };
 
   return (
-    <>
-      <LayoutCCAA>
-        <div className="w-full h-full flex">
-          {contextHolder}
-          <div className="h-full w-64 bg-neutral-100 border border-l border-neutral-300 p-6">
-            <h2 className="text-lg font-bold">Lançamentos</h2>
-            <div className="space-y-4 text-neutral-500 text-base mt-8">
-              <p>PP - Pagamento Parcela</p>
-              <p>PB - Pagamento Livros</p>
-              <p>PD - Pagamento Diverso</p>
-              <p>RP - Recebimento de Parcela</p>
-              <p>RB - Recebimento Livros</p>
-              <p>RD - Recebimento Diverso</p>
-              <p>RL - Recolhimento</p>
-              <p>EXE - Extorno Entrada </p>
-              <p>EXS - Extorno Saída</p>
-              <p>EXR - Extorno Recolhimento</p>
+    <LayoutCCAA>
+      <div className="flex h-full">
+        {contextHolder}
+        {/* Left Sidebar */}
+        <div className="w-64 bg-neutral-100 border-r border-neutral-300 p-6 shrink-0">
+          <h2 className="text-lg font-bold">Lançamentos</h2>
+          <div className="space-y-4 text-neutral-500 text-base mt-8">
+            <p>PP - Pagamento Parcela</p>
+            <p>PB - Pagamento Livros</p>
+            <p>PD - Pagamento Diverso</p>
+            <p>RP - Recebimento de Parcela</p>
+            <p>RB - Recebimento Livros</p>
+            <p>RD - Recebimento Diverso</p>
+            <p>RL - Recolhimento</p>
+            <p>EXE - Extorno Entrada </p>
+            <p>EXS - Extorno Saída</p>
+            <p>EXR - Extorno Recolhimento</p>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 p-8 overflow-auto">
+          <div className="min-w-[100vh]">
+            <div className="flex items-start justify-between mb-8">
+              <div>
+                <Typography.Title level={3}>
+                  Caixa registradora
+                </Typography.Title>
+                <Typography.Text type="secondary">
+                  {new Date(session.openDate).toLocaleString()}
+                </Typography.Text>
+              </div>
+              <div className="flex gap-4">
+                <Button onClick={handleScrollToClosing} type="default">
+                  Fechar caixa
+                </Button>
+                <Button
+                  onClick={() => setOpenCreateRecordModal(true)}
+                  type="primary"
+                >
+                  Novo Lançamento
+                </Button>
+              </div>
+            </div>
+
+            <Table className="mb-8" columns={columns} dataSource={dataSource} />
+
+            <div ref={closingSectionRef}>
+              <ClosingSession session={session} />
             </div>
           </div>
-          <Row justify="center" className="p-12 w-full">
-            <Card className="max-w-7xl w-full pt-7">
-              <div className="flex items-start justify-between">
-                <div>
-                  <Typography.Title level={3}>
-                    Caixa registradora
-                  </Typography.Title>
-                  <Typography.Text type="secondary">
-                    {new Date(session.openDate).toLocaleString()}
-                  </Typography.Text>
-                </div>
-                <div className="flex gap-4">
-                  <Button
-                    onClick={() => handleScrollToClosing()}
-                    color="default"
-                    type="default"
-                  >
-                    Fechar caixa
-                  </Button>
-                  <Button
-                    onClick={() => setOpenCreateRecordModal(true)}
-                    type="primary"
-                  >
-                    Novo Lançamento
-                  </Button>
-                </div>
-              </div>
-              <Table
-                className="mt-8"
-                columns={columns}
-                dataSource={dataSource}
-              />
-            </Card>
-          </Row>
-          {/* Create Session Modal */}
-          <Modal
-            title="Criar Novo Lançamento"
-            open={openCreateRecordModal}
-            onOk={handleCreateRecord}
-            onCancel={() => setOpenCreateRecordModal(false)}
-            okText="Criar"
-            cancelText="Cancelar"
-          >
-            <Form form={form} layout="vertical" name="create_record_form">
-              <Form.Item
-                name="code"
-                label="Código do Aluno"
-                rules={[
-                  { required: true, message: "Por favor, insira o código." },
-                ]}
-              >
-                <Input placeholder="Insira o código do aluno" />
-              </Form.Item>
-              <Form.Item
-                name="action"
-                label="Ação"
-                rules={[
-                  { required: true, message: "Por favor, selecione a ação." },
-                ]}
-              >
-                <Select placeholder="Selecione a ação">
-                  <Select.Option value="PP">PP</Select.Option>
-                  <Select.Option value="PB">PB</Select.Option>
-                  <Select.Option value="PD">PD</Select.Option>
-                  <Select.Option value="RB">RP</Select.Option>
-                  <Select.Option value="RB">RB</Select.Option>
-                  <Select.Option value="RD">RD</Select.Option>
-                  <Select.Option value="RL">RL</Select.Option>
-                  <Select.Option value="EXE">EXE</Select.Option>
-                  <Select.Option value="EXS">EXS</Select.Option>
-                  <Select.Option value="EXR">EXR</Select.Option>
-                </Select>
-              </Form.Item>
-              <Form.Item
-                name="value"
-                label="Valor"
-                rules={[
-                  { required: true, message: "Por favor, insira o valor." },
-                ]}
-              >
-                <InputNumber
-                  style={{ width: "100%" }}
-                  prefix="R$ "
-                  decimalSeparator=","
-                  step={0.01}
-                  min={0}
-                />
-              </Form.Item>
-            </Form>
-          </Modal>
         </div>
-      </LayoutCCAA>
-      <div ref={closingSectionRef}>
-        <ClosingSession session={session} />
       </div>
-    </>
+
+      {/* Create Session Modal */}
+      <Modal
+        title="Criar Novo Lançamento"
+        open={openCreateRecordModal}
+        onOk={handleCreateRecord}
+        onCancel={() => setOpenCreateRecordModal(false)}
+        okText="Criar"
+        cancelText="Cancelar"
+      >
+        <Form form={form} layout="vertical" name="create_record_form">
+          <Form.Item
+            name="code"
+            label="Código do Aluno"
+            rules={[{ required: true, message: "Por favor, insira o código." }]}
+          >
+            <Input placeholder="Insira o código do aluno" />
+          </Form.Item>
+          <Form.Item
+            name="action"
+            label="Ação"
+            rules={[
+              { required: true, message: "Por favor, selecione a ação." },
+            ]}
+          >
+            <Select placeholder="Selecione a ação">
+              <Select.Option value="PP">PP</Select.Option>
+              <Select.Option value="PB">PB</Select.Option>
+              <Select.Option value="PD">PD</Select.Option>
+              <Select.Option value="RB">RP</Select.Option>
+              <Select.Option value="RB">RB</Select.Option>
+              <Select.Option value="RD">RD</Select.Option>
+              <Select.Option value="RL">RL</Select.Option>
+              <Select.Option value="EXE">EXE</Select.Option>
+              <Select.Option value="EXS">EXS</Select.Option>
+              <Select.Option value="EXR">EXR</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="value"
+            label="Valor"
+            rules={[{ required: true, message: "Por favor, insira o valor." }]}
+          >
+            <InputNumber
+              style={{ width: "100%" }}
+              prefix="R$ "
+              decimalSeparator=","
+              step={0.01}
+              min={0}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </LayoutCCAA>
   );
 }

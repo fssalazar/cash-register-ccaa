@@ -9,6 +9,7 @@ import { SessionService } from "@/services/sessions";
 import { authOptions } from "@/lib/authOptions";
 import { AdminSession } from "@/app/components/features/Admin/Session/Sessions";
 import { LayoutCCAA } from "@/app/components/Layout";
+import { SessionsTotal } from "@/app/components/features/Admin/Session/SessionsTotal";
 
 interface PageProps {
   searchParams: {
@@ -70,8 +71,14 @@ export default async function AdminSessionDetailPage({
 
   return (
     <LayoutCCAA>
-      <AdminSession session={session1Data as unknown as any} />
-      {session2Data && <AdminSession session={session2Data} />}
+      <AdminSession
+        cashRegister={cashRegister}
+        session={session1Data as unknown as any}
+      />
+      {session2Data && (
+        <AdminSession cashRegister={cashRegister} session={session2Data} />
+      )}
+      <SessionsTotal session1={session1Data} session2={session2Data} />
     </LayoutCCAA>
   );
 }

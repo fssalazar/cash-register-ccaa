@@ -12,7 +12,7 @@ export function LayoutCCAA({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <Layout className="h-screen w-screen">
+    <Layout className="h-screen flex flex-col">
       <Layout.Header className="bg-blue-900 flex items-center justify-between">
         <Link href="/">
           <Image src={logo.src} alt="Logo" width={60} height={60} priority />
@@ -21,7 +21,9 @@ export function LayoutCCAA({ children }: { children: React.ReactNode }) {
           Sair
         </Button>
       </Layout.Header>
-      <Layout.Content className="w-full">{children}</Layout.Content>
+      <Layout.Content className="flex-1 overflow-auto">
+        {children}
+      </Layout.Content>
     </Layout>
   );
 }

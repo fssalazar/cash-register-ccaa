@@ -13,8 +13,8 @@ interface PageProps {
 }
 
 const AdminDashboard = async ({ searchParams }: PageProps) => {
-  const page = parseInt((searchParams?.page as string) ?? "1", 10);
-  const size = parseInt((searchParams?.size as string) ?? "10", 10);
+  const page = await parseInt((searchParams?.page as string) ?? "1", 10);
+  const size = await parseInt((searchParams?.size as string) ?? "10", 10);
   const session = await getServerSession(authOptions);
 
   if (!session) {

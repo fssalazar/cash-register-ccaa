@@ -45,11 +45,17 @@ interface Session {
   closure?: Closure;
 }
 
-interface Props {
-  session: Session;
+interface CashRegister {
+  id: string;
+  name: string;
 }
 
-export function AdminSession({ session }: Props) {
+interface Props {
+  session: Session;
+  cashRegister: CashRegister;
+}
+
+export function AdminSession({ session, cashRegister }: Props) {
   // Table columns configuration
   const columns = [
     {
@@ -110,10 +116,12 @@ export function AdminSession({ session }: Props) {
 
   return (
     <div className="p-8 w-full">
-      <Row gutter={16} className="w-full">
+      <Row gutter={16} className="w-full gap-4">
         {/* Records Table */}
         <Card className="flex-1 mb-4">
-          <div className="font-semibold text-lg mb-4">Lançamentos</div>
+          <div className="font-semibold text-lg mb-4">
+            Lançamentos {cashRegister.name}
+          </div>
           <Table columns={columns} dataSource={dataSource} />
         </Card>
 
@@ -140,10 +148,13 @@ export function AdminSession({ session }: Props) {
                   { label: "0,05", value: session.bills.fiveCent },
                   { label: "Total", value: session.bills.total },
                 ].map(({ label, value }) => (
-                  <React.Fragment key={label}>
+                  <div
+                    key={label}
+                    className="max-w-[200px] mt-2 flex items-center justify-between w-full"
+                  >
                     <span className="font-medium">{label}</span>
                     <InputNumber value={value} disabled className="w-full" />
-                  </React.Fragment>
+                  </div>
                 ))}
               </div>
             </Card>
@@ -165,7 +176,10 @@ export function AdminSession({ session }: Props) {
                       value: session.closure.totalRecordsAmount,
                     },
                   ].map(({ label, value }) => (
-                    <div key={label} className="mt-2">
+                    <div
+                      key={label}
+                      className="max-w-[200px] mt-2 flex items-center justify-between w-full"
+                    >
                       <span className="font-medium">{label}</span>
                       <InputNumber
                         value={value}
@@ -194,7 +208,10 @@ export function AdminSession({ session }: Props) {
                       value: session.closure.receivedAmountByMoney,
                     },
                   ].map(({ label, value }) => (
-                    <div key={label} className="mt-2">
+                    <div
+                      key={label}
+                      className="max-w-[200px] mt-2 flex items-center justify-between w-full"
+                    >
                       <span className="font-medium">{label}</span>
                       <InputNumber
                         value={value}

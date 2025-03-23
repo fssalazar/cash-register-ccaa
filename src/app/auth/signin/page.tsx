@@ -30,30 +30,28 @@ const SignIn = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Form
-        name="signin"
-        className="w-full max-w-md p-8 bg-white rounded shadow-md"
-        onFinish={onFinish}
-      >
-        <h2 className="mb-6 text-2xl font-bold text-center">Sign In</h2>
-        <Form.Item
-          name="email"
-          rules={[{ required: true, message: "Please input your Email!" }]}
-        >
-          <Input placeholder="Email" />
-        </Form.Item>
-        <Form.Item
-          name="password"
-          rules={[{ required: true, message: "Please input your Password!" }]}
-        >
-          <Input.Password placeholder="Password" />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading} block>
-            Sign In
-          </Button>
-        </Form.Item>
-      </Form>
+      <div className="w-full max-w-md p-8 bg-white rounded shadow-md rounded-lg">
+        <Form name="signin" onFinish={onFinish}>
+          <h2 className="mb-6 text-2xl font-bold text-center">Sign In</h2>
+          <Form.Item
+            name="email"
+            rules={[{ required: true, message: "Please input your Email!" }]}
+          >
+            <Input placeholder="Email" />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: "Please input your Password!" }]}
+          >
+            <Input.Password placeholder="Password" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={loading} block>
+              Sign In
+            </Button>
+          </Form.Item>
+        </Form>
+      </div>
     </div>
   );
 };
