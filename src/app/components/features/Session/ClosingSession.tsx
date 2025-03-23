@@ -10,7 +10,6 @@ import {
   InputNumber,
   Row,
   Typography,
-  Col,
   notification,
 } from "antd";
 import { useRouter } from "next/navigation";
