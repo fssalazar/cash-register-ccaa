@@ -15,6 +15,7 @@ interface CloseSessionData {
     receivedAmountByMoney: number;
   };
   bills: {
+    twoHundred: number;
     hundred: number;
     fifty: number;
     twenty: number;
@@ -65,6 +66,7 @@ export async function closeSession(data: CloseSessionData) {
   // Create bills entry
   const createdBills = await prisma.bills.create({
     data: {
+      twoHundred: bills.twoHundred,
       hundred: bills.hundred,
       fifty: bills.fifty,
       twenty: bills.twenty,

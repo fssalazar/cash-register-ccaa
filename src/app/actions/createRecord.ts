@@ -32,6 +32,7 @@ export async function createRecord(data: CreateRecordData) {
     "PD",
     "RB",
     "RD",
+    "RP",
     "RL",
     "EXE",
     "EXS",

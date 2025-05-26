@@ -44,6 +44,7 @@ export default async function SessionDetailPage({ params }: PageProps) {
   // Fetch the session and verify it belongs to the cash register
   const sessionService = new SessionService(prisma, cashRegisterId);
   const sessionData = await sessionService.getSession(sessionId);
+  const lastClosedSession = await sessionService.getLastClosedSession();
 
   if (!sessionData) {
     return (
@@ -53,5 +54,7 @@ export default async function SessionDetailPage({ params }: PageProps) {
     );
   }
 
-  return <Session session={sessionData} />;
+  return (
+    <Session session={sessionData} lastClosedSession={lastClosedSession} />
+  );
 }

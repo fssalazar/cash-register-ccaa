@@ -21,7 +21,13 @@ interface BillConfig {
   value: number;
 }
 
-export function ClosingSession({ session }: { session: any }) {
+export function ClosingSession({
+  session,
+  lastClosedSession,
+}: {
+  session: any;
+  lastClosedSession: any;
+}) {
   const [api, contextHolder] = notification.useNotification();
   const [form] = Form.useForm();
 
@@ -29,7 +35,7 @@ export function ClosingSession({ session }: { session: any }) {
 
   const onValuesChange = (changedValues: any, allValues: any) => {
     const denominations = [
-      { field: "twoHundred", multiplier: 100 },
+      { field: "twoHundred", multiplier: 200 },
       { field: "hundred", multiplier: 100 },
       { field: "fifty", multiplier: 50 },
       { field: "twenty", multiplier: 20 },
@@ -62,6 +68,7 @@ export function ClosingSession({ session }: { session: any }) {
   };
 
   useEffect(() => {
+    // Set initial form values
     form.setFieldsValue({
       totalTape: (
         Math.round(
@@ -76,7 +83,44 @@ export function ClosingSession({ session }: { session: any }) {
       collected: parseFloat(getTotalCollectedMoney(session)),
       difference: 0,
     });
-  }, [form, session.records, session]);
+
+    // If there's a last closed session, set the bill quantities
+    if (lastClosedSession) {
+      const billValues = {
+        twoHundred: lastClosedSession.bills.twoHundred,
+        hundred: lastClosedSession.bills.hundred,
+        fifty: lastClosedSession.bills.fifty,
+        twenty: lastClosedSession.bills.twenty,
+        ten: lastClosedSession.bills.ten,
+        five: lastClosedSession.bills.five,
+        two: lastClosedSession.bills.two,
+        one: lastClosedSession.bills.one,
+        fiftyCent: lastClosedSession.bills.fiftyCent,
+        twentyFiveCent: lastClosedSession.bills.twentyFiveCent,
+        tenCent: lastClosedSession.bills.tenCent,
+        fiveCent: lastClosedSession.bills.fiveCent,
+        total: lastClosedSession.bills.total,
+      };
+
+      // Set both the quantities and their corresponding amounts
+      form.setFieldsValue({
+        ...billValues,
+        // Calculate amounts based on quantities
+        amount_twoHundred: billValues.twoHundred * 200,
+        amount_hundred: billValues.hundred * 100,
+        amount_fifty: billValues.fifty * 50,
+        amount_twenty: billValues.twenty * 20,
+        amount_ten: billValues.ten * 10,
+        amount_five: billValues.five * 5,
+        amount_two: billValues.two * 2,
+        amount_one: billValues.one * 1,
+        amount_fiftyCent: billValues.fiftyCent * 0.5,
+        amount_twentyFiveCent: billValues.twentyFiveCent * 0.25,
+        amount_tenCent: billValues.tenCent * 0.1,
+        amount_fiveCent: billValues.fiveCent * 0.05,
+      });
+    }
+  }, [form, session.records, session, lastClosedSession]);
 
   const handleSubmit = async () => {
     try {

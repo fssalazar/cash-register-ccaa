@@ -162,4 +162,30 @@ export class SessionService {
       throw error;
     }
   }
+
+  async getLastClosedSession(): Promise<Session | null> {
+    if (!this.cashRegisterId) {
+      throw new Error("Cash register ID is required");
+    }
+    try {
+      const session = await this.prisma.session.findFirst({
+        where: {
+          cashRegisterId: this.cashRegisterId,
+          closeDate: { not: null },
+        },
+        orderBy: {
+          closeDate: "desc",
+        },
+        include: {
+          records: true,
+          bills: true,
+          closure: true,
+        },
+      });
+      return session;
+    } catch (error) {
+      console.error("Error fetching last closed session:", error);
+      throw error;
+    }
+  }
 }

@@ -19,7 +19,13 @@ import { useRef, useState } from "react";
 import { LayoutCCAA } from "../../Layout";
 import { ClosingSession } from "./ClosingSession";
 
-export function Session({ session }: { session: any }) {
+export function Session({
+  session,
+  lastClosedSession,
+}: {
+  session: any;
+  lastClosedSession: any;
+}) {
   const [form] = Form.useForm();
   const [api, contextHolder] = notification.useNotification();
   const [openCreateRecordModal, setOpenCreateRecordModal] = useState(false);
@@ -187,7 +193,10 @@ export function Session({ session }: { session: any }) {
             <Table className="mb-8" columns={columns} dataSource={dataSource} />
 
             <div ref={closingSectionRef}>
-              <ClosingSession session={session} />
+              <ClosingSession
+                session={session}
+                lastClosedSession={lastClosedSession}
+              />
             </div>
           </div>
         </div>
@@ -221,7 +230,7 @@ export function Session({ session }: { session: any }) {
               <Select.Option value="PP">PP</Select.Option>
               <Select.Option value="PB">PB</Select.Option>
               <Select.Option value="PD">PD</Select.Option>
-              <Select.Option value="RB">RP</Select.Option>
+              <Select.Option value="RP">RP</Select.Option>
               <Select.Option value="RB">RB</Select.Option>
               <Select.Option value="RD">RD</Select.Option>
               <Select.Option value="RL">RL</Select.Option>
